@@ -202,7 +202,7 @@ function checkCollisions() {
             } else if (b.type === 'kol_aura') {
                 const d = ((e.x - b.x) ** 2 + (e.y - b.y) ** 2);
                 if (d < b.r ** 2) {
-                    if (state.frames % 10 === 0) {
+                    if (state.frames % 20 === 0) {
                         takeDamage(e, b.dmg);
                         applyTraitEffects(b, e); // Allow aura to trigger traits
                     }
@@ -275,9 +275,20 @@ const DIALOGUE_CHANCE = 0.3; // 30%
 
 function tryTriggerDialogue(e) {
     try {
-        if (Math.random() < DIALOGUE_CHANCE && !e.activeDialogue) {
-            const text = DIALOGUE_OPTIONS[Math.floor(Math.random() * DIALOGUE_OPTIONS.length)];
-            e.activeDialogue = { text, life: 2.0 }; // Show for 2 seconds
+        if (Math.random() < DIALOGUE_CHANCE) {
+            // Check if already has dialogue? 
+            // We can check if any dialogue is targeting this enemy?
+            const hasDialogue = state.floatingDialogues.some(d => d.target === e);
+            if (!hasDialogue) {
+                const text = DIALOGUE_OPTIONS[Math.floor(Math.random() * DIALOGUE_OPTIONS.length)];
+                state.floatingDialogues.push({
+                    text,
+                    x: e.x,
+                    y: e.y - 50,
+                    life: 2.0,
+                    target: e
+                });
+            }
         }
     } catch (err) {
         console.warn("Dialogue Error:", err);

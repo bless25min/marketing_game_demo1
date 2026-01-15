@@ -19,6 +19,7 @@ function update() {
         checkTimeEvents();
 
         // Burn Rate (Per Game Second)
+        state.player.burnRate += state.player.burnAcceleration; // Accelerate burn rate
         state.player.money -= state.player.burnRate;
         if (state.player.money <= 0) {
             state.player.money = 0;
@@ -149,7 +150,7 @@ window.addEventListener('pointerdown', (e) => {
         return;
     }
     if (state.screen === 'over') {
-        if (e.target.closest('.course-btn')) return;
+        if (e.target.closest('.course-btn')) return; // Allow button click to propagate
         state.screen = 'start';
         return;
     }
@@ -406,6 +407,8 @@ function resetGame() {
     state.screen = 'playing';
     state.player.money = 100000;
     state.player.burnRate = 100;
+    state.player.burnAcceleration = 5; // Reset acceleration base if we ever decide to change it dynamically, though currently it is const in stat
+
     // Spawn in Middle of Map (1500, 1500)
     const CENTER = 1500;
     state.player.x = CENTER;

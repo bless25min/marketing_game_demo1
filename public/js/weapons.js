@@ -170,7 +170,7 @@ const WEAPON_REGISTRY = {
     },
     'cold_call': {
         name: "陌生開發", icon: "📞", type: "beam", trait: "lockon",
-        baseStats: { cd: 120, dmg: 8, duration: 30, count: 1, color: '#fca5a5' },
+        baseStats: { cd: 120, dmg: 4, duration: 30, count: 1, color: '#fca5a5' },
         tags: ['outreach'],
         description: "對最近敵人發射雷射 (Laser Beam)。\n效果：每級增加鎖定目標數量。",
         behavior: (w, s, stats) => {
@@ -221,7 +221,7 @@ const WEAPON_REGISTRY = {
     },
     'blog_post': {
         name: "長文佈道", icon: "📖", type: "heavy", trait: "heavy",
-        baseStats: { cd: 100, dmg: 30, speed: 3, duration: 90, count: 1, color: '#3b82f6', r: 20 },
+        baseStats: { cd: 100, dmg: 30, speed: 3, duration: 150, count: 1, color: '#3b82f6', r: 20 },
         tags: ['content'],
         description: "發射一本巨型書籍，穿透並擊退敵人 (Heavy)。\n效果：每級增加傷害與擊退力。",
         behavior: (w, s, stats) => {
@@ -235,7 +235,7 @@ const WEAPON_REGISTRY = {
     },
     'pixel': {
         name: "像素追蹤", icon: "👁️", type: "homing", trait: "homing",
-        baseStats: { cd: 60, dmg: 5, speed: 7, duration: 120, count: 2, color: '#4ade80' },
+        baseStats: { cd: 60, dmg: 2, speed: 3, duration: 120, count: 2, color: '#4ade80', r: 8 },
         tags: ['tech'],
         description: "發射會自動轉彎追蹤敵人的眼睛 (Homing)。\n效果：每級增加追蹤靈敏度與數量。",
         behavior: (w, s, stats) => {
@@ -257,6 +257,7 @@ const WEAPON_REGISTRY = {
                     dmg: stats.dmg * state.stats.damageMult,
                     duration: stats.duration,
                     color: stats.color,
+                    r: stats.r, // Fix: Pass radius for collision
                     homing: true,
                     explosive: stats.explosive,
                     hasMinionTrait: stats.hasMinionTrait,

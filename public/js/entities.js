@@ -55,24 +55,25 @@ function spawnOneEnemy() {
     const timeMult = 1 + (state.seconds / 60) * 0.8; // Stronger time scaling
     const difficultyMult = Math.pow(1.08, state.level) * timeMult;
 
-    let stats = { hp: 10, speed: 1, visual: '👨‍💼', r: 15, xp: 5 * difficultyMult };
+    let stats = { hp: 15, speed: 1, visual: '👨‍💼', r: 15, xp: 5 * difficultyMult };
 
     if (type === 'lead') {
-        stats = { hp: 10 * difficultyMult, speed: (1 + Math.random()) * 0.25, visual: '👨‍💼', r: 15, xp: 5 * difficultyMult };
+        stats = { hp: 15 * difficultyMult, speed: (1 + Math.random()) * 0.25, visual: '👨‍💼', r: 15, xp: 5 * difficultyMult };
     }
+
     else if (type === 'tank') {
-        stats = { hp: 40 * difficultyMult, speed: 0.5, visual: '👩‍🎓', r: 25, xp: 20 * difficultyMult };
+        stats = { hp: 60 * difficultyMult, speed: 0.5, visual: '👩‍🎓', r: 25, xp: 20 * difficultyMult };
     }
     else if (type === 'dasher') {
-        stats = { hp: 15 * difficultyMult, speed: 1.0, visual: '👷', r: 12, xp: 10 * difficultyMult };
+        stats = { hp: 22.5 * difficultyMult, speed: 1.0, visual: '👷', r: 12, xp: 10 * difficultyMult };
     }
     else if (type === 'ranged') {
-        stats = { hp: 20 * difficultyMult, speed: 0.75, visual: '👵', r: 18, xp: 15 * difficultyMult, type: 'ranged', shootCd: 0 };
+        stats = { hp: 30 * difficultyMult, speed: 0.75, visual: '👵', r: 18, xp: 15 * difficultyMult, type: 'ranged', shootCd: 0 };
     }
     else if (type === 'boss') {
         // SUPER BUFFED BOSS: Fast, Giant, Tanky => CEO/Investor
         stats = {
-            hp: 50000 * difficultyMult,
+            hp: 75000 * difficultyMult,
             speed: 1.0, // Slower roaming
             visual: '🤵',
             r: 300, // Massive (occupies huge portion of screen)
@@ -236,14 +237,29 @@ function updateBullets(dt) {
         } else if (b.homing) {
             const target = findNearestEnemy();
             if (target) {
+                // Steering behavior
                 const angle = Math.atan2(target.y - b.y, target.x - b.x);
-                b.vx += Math.cos(angle) * 0.5;
-                b.vy += Math.sin(angle) * 0.5;
-                const speed = Math.sqrt(b.vx ** 2 + b.vy ** 2);
-                if (speed > 8) { b.vx *= 0.9; b.vy *= 0.9; }
+                const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy) || 8; // Maintain current speed or default
+
+                // Simple lerp angle for steering? Or just direct set for "Pixel Perfect" tracking?
+                // User complained about orbiting. High turn rate is better.
+                // Let's use a blend.
+                const currentAngle = Math.atan2(b.vy, b.vx);
+
+                // Angle lerp
+                let diff = angle - currentAngle;
+                while (diff < -Math.PI) diff += Math.PI * 2;
+                while (diff > Math.PI) diff -= Math.PI * 2;
+
+                // Turn speed: 0.15 radians per frame (~9 degrees)
+                const turnSpeed = 0.15;
+                const newAngle = currentAngle + Math.max(-turnSpeed, Math.min(turnSpeed, diff));
+
+                b.vx = Math.cos(newAngle) * speed;
+                b.vy = Math.sin(newAngle) * speed;
             }
-            b.x += b.vx; b.y += b.vy; // Double move? No, already moved above. Remove duplicate move.
-            // Oh wait, `b.x += ` is above. So this modifies v for NEXT frame. Correct.
+            b.x += b.vx; b.y += b.vy;
+
         } else if (b.type === 'spider_minion') {
             // Minion AI
             b.attackCd = (b.attackCd || 0) - 1;
@@ -318,5 +334,23 @@ function updateFloatingTexts(dt) {
         t.y += t.vy * dt;
         t.life -= (1 / 60) * dt; // Match Time Scale (duration in seconds)
         if (t.life <= 0) state.floatingTexts.splice(i, 1);
+    }
+
+    // Update Floating Dialogues
+    for (let i = state.floatingDialogues.length - 1; i >= 0; i--) {
+        const d = state.floatingDialogues[i];
+        d.life -= (1 / 60) * (state.timeScale || 1.0);
+
+        // Follow target if alive
+        if (d.target && !d.target.dead && state.enemies.includes(d.target)) {
+            d.x = d.target.x;
+            d.y = d.target.y - 50; // Above head
+        } else {
+            // Target dead, stay put (or float up slightly?)
+            d.target = null; // Detach
+            d.y -= 0.2; // Float up slowly
+        }
+
+        if (d.life <= 0) state.floatingDialogues.splice(i, 1);
     }
 }

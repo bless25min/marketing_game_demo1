@@ -9,13 +9,14 @@ const state = {
     seconds: 0,
 
     // Player - Start at Map Center (1500, 1500)
-    player: { x: 1500, y: 1500, r: 10, speed: 4, money: 100000, burnRate: 100, angle: 0, image: null },
+    player: { x: 1500, y: 1500, r: 10, speed: 4, money: 100000, burnRate: 100, burnAcceleration: 5, angle: 0, image: null },
 
     bullets: [],
     enemyBullets: [],
     enemies: [],
     particles: [],
     floatingTexts: [],
+    floatingDialogues: [], // New detached dialogues
     gems: [], // XP Drops
 
     level: 1,

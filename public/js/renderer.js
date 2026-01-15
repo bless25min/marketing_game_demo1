@@ -291,21 +291,76 @@ function drawEnemies() {
             ctx.fillStyle = '#fff';
             ctx.beginPath(); ctx.arc(0, 0, e.r, 0, Math.PI * 2); ctx.fill();
             e.flash--;
+            // Do NOT return here, just end the flash visual, restore so we can draw other things (like text/bar) normally?
+            // Actually, usually "Flash" replaces the sprite.
+            // So if we flash, we don't draw the "visual" emoji?
+            // Let's just restore and continue to draw HP bar and Dialogue, but maybe skip "visual"?
             ctx.restore();
-            return;
+            // Skip drawing the Emoji if flashing
+        } else {
+            // Font based visuals
+            ctx.globalAlpha = 1;
+            ctx.font = '24px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#fff';
+            ctx.shadowColor = '#f00';
+            ctx.shadowBlur = 5;
+            ctx.fillText(e.visual, 0, 0);
+            ctx.shadowBlur = 0;
+            ctx.restore(); // Restore sprite transform
         }
 
-        // Font based visuals
-        ctx.globalAlpha = 1;
-        ctx.font = '24px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#fff';
-        ctx.shadowColor = '#f00';
-        ctx.shadowBlur = 5;
-        ctx.fillText(e.visual, 0, 0);
-        ctx.shadowBlur = 0;
+        // RE-SAVE for shared components (HP Bar, Dialogue) which need position but NOT rotation/flip if we want them consistent?
+        // Actually, drawEnemies context was: translate, (scale -1, 1).
+        // Flash restores that.
+        // So now we are back at World Origin? NO.
+        // We lost the verify position!
+        // Wait, the original code had `ctx.restore()` inside the `if (flash)`.
+        // And then `return`.
+        // This meant it skipped HP bar and dialogue!
 
+        // BETTER FIX:
+        // Draw HP Bar and Dialogue OUTSIDE the "Sprite Drawing" block.
+        // Let's refactor:
+        // 1. Setup Context (Translate)
+        // 2. Flip if needed
+        // 3. Draw Sprite (Normal or Flash)
+        // 4. Restore Flip? Or just draw Text inverted?
+        // The original code handled flip in dialogue by re-flipping.
+
+        // Let's try this:
+        // Re-establish context for independent elements if we returned earlier.
+        // But we can't easily jump back.
+
+        // Let's change the structure:
+
+        ctx.save();
+        ctx.translate(e.x, e.y);
+
+        // 1. Draw Sprite Layer
+        ctx.save();
+        if ((e.x - state.player.x) > 0) ctx.scale(-1, 1);
+
+        if (e.flash > 0) {
+            ctx.globalAlpha = 0.5;
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(0, 0, e.r, 0, Math.PI * 2); ctx.fill();
+            e.flash--;
+        } else {
+            ctx.globalAlpha = 1;
+            ctx.font = '24px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#fff';
+            ctx.shadowColor = '#f00';
+            ctx.shadowBlur = 5;
+            ctx.fillText(e.visual, 0, 0);
+            ctx.shadowBlur = 0;
+        }
+        ctx.restore(); // Done with Sprite
+
+        // 2. Draw UI Layer (HP Bar, Dialogue) - Unaffected by Flash
         // HP Bar
         if (e.hp < e.maxHp) {
             const hpPct = Math.max(0, e.hp / e.maxHp);
@@ -317,10 +372,7 @@ function drawEnemies() {
 
         // Dialogue Bubble
         if (e.activeDialogue && e.activeDialogue.life > 0) {
-            ctx.save();
-            // Un-flip text if the entity is flipped
-            if ((e.x - state.player.x) > 0) ctx.scale(-1, 1);
-
+            // No need to un-flip, we are in non-flipped context
             ctx.font = '12px sans-serif';
             const w = ctx.measureText(e.activeDialogue.text).width + 10;
             ctx.shadowBlur = 0;
@@ -337,14 +389,43 @@ function drawEnemies() {
             ctx.textAlign = 'center'; // Ensure centered
             ctx.fillText(e.activeDialogue.text, 0, -36); // Adjusted Y slightly for vertical center
 
-            ctx.restore();
-
             e.activeDialogue.life -= (1 / 60) * (state.timeScale || 1.0);
         }
+
+        ctx.restore(); // End Entity Draw
+    });
+}
+
+function drawFloatingDialogues() {
+    state.floatingDialogues.forEach(d => {
+        ctx.save();
+        ctx.translate(d.x, d.y);
+        // Un-flip if needed? d.x is world pos.
+        // We are in world context. Text should be upright.
+
+        ctx.font = '12px sans-serif';
+        const w = ctx.measureText(d.text).width + 10;
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+
+        ctx.beginPath();
+        if (ctx.roundRect) {
+            ctx.roundRect(-w / 2, -10, w, 20, 5);
+        } else {
+            ctx.rect(-w / 2, -10, w, 20);
+        }
+        ctx.fill();
+
+        ctx.fillStyle = '#000';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(d.text, 0, 0);
 
         ctx.restore();
     });
 }
+
+
 
 function drawGems() {
     state.gems.forEach(g => {
@@ -512,6 +593,7 @@ function draw() {
     drawPlayer();
     drawParticles();
     drawFloatingTexts();
+    drawFloatingDialogues();
 
     ctx.restore();
 
