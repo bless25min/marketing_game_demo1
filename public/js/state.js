@@ -1,0 +1,69 @@
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+const state = {
+    screen: 'start', // start, playing, upgrade, over
+    width: 0,
+    height: 0,
+    frames: 0,
+    seconds: 0,
+
+    // Player - Start at Map Center (1500, 1500)
+    player: { x: 1500, y: 1500, r: 10, speed: 4, money: 100000, burnRate: 100, angle: 0, image: null },
+
+    bullets: [],
+    enemyBullets: [],
+    enemies: [],
+    particles: [],
+    floatingTexts: [],
+    gems: [], // XP Drops
+
+    level: 1,
+    xp: 0,
+    xpNeeded: 10,
+
+    gemsNeeded: 5, // Legacy counter? No, let's use xp/xpNeeded
+
+    // Upgrades
+    stats: {
+        damageMult: 1,
+        areaMult: 1,
+        speedMult: 1,
+        cooldownMult: 1,
+        amountMult: 0,
+        pierce: 0
+    },
+
+    synergies: [], // Unlocked synergy keys ['content+viral']
+
+    // Systems
+    shake: 0,
+    hitStop: 0,
+
+    // Upgrade Menu
+    upgradeOptions: [],
+
+    // Logic
+    lastStoryTime: 0,
+    zoom: 1.0,
+
+    // New Mechanics
+    gameTime: 180, // 3 Minutes Limit
+    timeScale: 0.5, // 0.5x Slow Motion
+    debuffState: { type: null, timer: 0 },
+    sessionStats: { revenue: 0, customersParsed: 0, topSource: null }
+};
+
+let weapons = {};
+
+function resize() {
+    state.width = window.innerWidth;
+    state.height = window.innerHeight;
+    canvas.width = state.width;
+    canvas.height = state.height;
+
+    // Auto-adjust Zoom for Mobile
+    state.zoom = state.width < 800 ? 0.6 : 1.0;
+}
+window.addEventListener('resize', resize);
+resize();

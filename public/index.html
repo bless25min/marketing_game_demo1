@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>廖天佑｜遊戲化行銷實戰</title>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #0f172a;
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        h1 {
+            font-size: 4rem;
+            text-shadow: 0 0 20px #a855f7;
+            margin-bottom: 20px;
+        }
+
+        .cards {
+            display: flex;
+            gap: 20px;
+            pointer-events: auto;
+            flex-wrap: wrap;
+            /* Allow wrapping */
+            justify-content: center;
+            /* Center items */
+            overflow-y: auto;
+            /* Scroll if too many */
+            max-height: 80vh;
+            /* Prevent overflowing screen */
+            padding: 10px;
+        }
+
+        .card {
+            background: #1e293b;
+            border: 2px solid #334155;
+            padding: 20px;
+            width: 220px;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: transform 0.2s, border-color 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            flex-shrink: 0;
+            /* Prevent squashing if no wrap */
+        }
+
+        /* Mobile Optimization */
+        @media (max-width: 600px) {
+            .cards {
+                flex-direction: column;
+                /* Stack vertically on phone */
+                align-items: stretch;
+                /* Stretch to width */
+                justify-content: center;
+                /* Center in available height */
+                width: 90%;
+                height: 70vh;
+                /* Fixed height container */
+                overflow-y: hidden;
+                /* No scroll */
+                gap: 10px;
+                /* Smaller gap */
+            }
+
+            .card {
+                width: auto;
+                flex: 1;
+                /* Distribute height equally */
+                flex-direction: row;
+                text-align: left;
+                padding: 10px;
+                /* Compact padding */
+                min-height: 0;
+                /* Allow shrinking */
+                align-items: center;
+            }
+
+            .card .icon {
+                font-size: 2rem;
+                /* Smaller icon */
+                margin-right: 15px;
+                margin-bottom: 0;
+            }
+
+            .card h3 {
+                font-size: 1rem;
+                margin-bottom: 2px;
+            }
+
+            .card p {
+                font-size: 0.8rem;
+                line-height: 1.2;
+                display: -webkit-box;
+                line-clamp: 2;
+                -webkit-line-clamp: 2;
+                /* Limit text lines */
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            border-color: #3b82f6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+
+        .card .icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .card h3 {
+            color: #facc15;
+            margin: 0 0 10px 0;
+        }
+
+        .card p {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.6;
+                transform: scale(0.98);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.02);
+            }
+
+            100% {
+                opacity: 0.6;
+                transform: scale(0.98);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div id="ui"></div>
+
+    <!-- Load LIFF SDK -->
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+    <!-- Load Game Modules -->
+    <script src="js/constants.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/weapons.js"></script>
+    <script src="js/entities.js"></script>
+    <script src="js/renderer.js"></script>
+    <script src="js/game.js"></script>
+</body>
+
+</html>
