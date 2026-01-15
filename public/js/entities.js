@@ -198,8 +198,8 @@ function updateBullets(dt) {
         if (b.duration <= 0) {
             // Expire
             if (b.type === 'viral_throw') {
-                // Explode on expire
-                createExplosion(b.targetX, b.targetY, b.area || 100, b.dmg, b);
+                // Explode on expire (Use current position for Homing synergy support)
+                createExplosion(b.x, b.y, b.area || 100, b.dmg, b);
             }
             state.bullets.splice(i, 1);
             continue;
