@@ -452,7 +452,7 @@ function updateUI() {
     ui.style.paddingBottom = '0';
 
     if (state.screen === 'start') {
-        ui.innerHTML = `<h1 style="font-size: 4rem; color: #fbbf24; text-shadow: 0 0 20px #b45309;">行銷倖存者</h1><p style="font-size: 1.5rem; animation: pulse 1s infinite;">點擊畫面開始挑戰</p>`;
+        ui.innerHTML = `<h1 style="font-size: 4rem; color: #fbbf24; text-shadow: 0 0 20px #b45309;">Lead Hunter<br><span style="font-size: 2rem;">名單收割者</span></h1><p style="font-size: 1.5rem; animation: pulse 1s infinite;">點擊畫面開始挑戰</p>`;
         ui.style.display = 'flex';
         ui.style.background = 'rgba(0,0,0,0.5)';
         ui.style.border = 'none';
@@ -523,25 +523,10 @@ function updateUI() {
         ui.style.flexDirection = 'column';
         ui.style.background = 'rgba(15, 23, 66, 0.95)';
     } else if (state.screen === 'upgrade') {
-        let html = `<h2 style="color:#fbbf24; text-shadow:0 0 10px #fbbf24;">>> UPGRADE AVAILABLE <<</h2><div class="cards" style="
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-            max-width: 100%;
-            padding: 20px;
-            max-height: 80vh; /* Scroll if needed on tiny screens */
-            overflow-y: auto;
-        ">`;
+        let html = `<h2 style="color:#fbbf24; text-shadow:0 0 10px #fbbf24;">>> UPGRADE AVAILABLE <<</h2><div class="cards">`;
         state.upgradeOptions.forEach((u, i) => {
             html += `
-            <div class="card" onclick="selectUpgrade(${i})" style="
-                border: 1px solid #4ade80; 
-                background: rgba(0, 20, 0, 0.9);
-                min-width: 250px; /* Prevent too small */
-                flex: 1 1 300px; /* Grow and shrink, basis 300px. Wraps nicely */
-                max-width: 100%;
-            ">
+            <div class="card" onclick="selectUpgrade(${i})">
                 <div class="icon">${u.icon}</div>
                 <div style="flex: 1;"> <!-- Text Wrapper -->
                     <h3 style="color:#4ade80; margin: 0 0 5px 0;">${u.title}</h3>
