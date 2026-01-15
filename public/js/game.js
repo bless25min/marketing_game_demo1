@@ -277,102 +277,8 @@ function generateUpgradeOptions() {
     state.upgradeOptions = pool.sort(() => 0.5 - Math.random()).slice(0, 3);
 }
 
-function updateUI() {
-    const ui = document.getElementById('ui');
+// Duplicate updateUI removed
 
-    // Default centering for most screens
-    ui.style.alignItems = 'center';
-    ui.style.justifyContent = 'center';
-    ui.style.paddingBottom = '0';
-
-    if (state.screen === 'start') {
-        const isLoggedIn = !!state.player.image;
-
-        ui.innerHTML = `
-            <h1 style="font-size: 4rem; color: #fbbf24; text-shadow: 0 0 20px #b45309;">行銷倖存者</h1>
-            <p style="font-size: 1.5rem; animation: pulse 1s infinite;">點擊畫面開始挑戰</p>
-            
-            ${!isLoggedIn ? `
-            <button onclick="window.location.href='/auth/login'" style="
-                margin-top: 30px;
-                background: #06C755;
-                color: white;
-                border: none;
-                padding: 12px 24px;
-                border-radius: 8px;
-                font-size: 1.2rem;
-                font-weight: bold;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                pointer-events: auto;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-                transition: transform 0.1s;
-            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                <span style="font-size: 1.5rem;">💬</span> 使用 LINE 登入 (XP +50%)
-            </button>
-            ` : `
-            <div style="
-                margin-top: 20px;
-                background: rgba(6, 199, 85, 0.2);
-                border: 1px solid #06C755;
-                padding: 10px 20px;
-                border-radius: 20px;
-                color: #06C755;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            ">
-                <span>✅ LINE 登入成功 - XP 加成啟動!</span>
-            </div>
-            `}
-        `;
-        ui.style.display = 'flex';
-        ui.style.flexDirection = 'column'; // Ensure vertical stacking
-        ui.style.background = 'rgba(0,0,0,0.6)';
-        ui.style.border = 'none';
-    } else if (state.screen === 'over') {
-        ui.innerHTML = `
-            <h1 style="color: #ef4444; text-shadow: 0 0 20px #7f1d1d; font-size: 4rem;">任務失敗</h1>
-            <p style="font-size: 1.5rem; color: #e5e7eb;">存活時間: ${Math.floor(state.seconds)} 秒</p>
-            <p style="margin-top: 20px; color: #94a3b8;">點擊畫面重新開始</p>
-            
-            <div style="margin-top: 40px; text-align: center;">
-                <p style="color: #fbbf24; font-size: 1.2rem; margin-bottom: 10px;">想知道如何突破行銷瓶頸？</p>
-                <button class="course-btn" onclick="window.open('https://ppa.tw/s/B85ADABB', '_blank')" 
-                    style="padding: 15px 30px; font-size: 1.5rem; background: #6366f1; color: white; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 0 15px #4f46e5; transition: transform 0.1s;">
-                    🎓 前往課程 (View Course)
-                </button>
-            </div>
-        `;
-        ui.style.display = 'flex';
-        ui.style.flexDirection = 'column';
-        ui.style.background = 'rgba(0, 0, 0, 0.85)';
-    } else if (state.screen === 'upgrade') {
-        let html = `<h2 style="color: #fbbf24; text-shadow: 0 0 10px #b45309;">升級！選擇你的強化</h2><div class="cards">`;
-        state.upgradeOptions.forEach((u, i) => {
-            html += `
-            <div class="card" onclick="selectUpgrade(${i})">
-                <div class="icon">${u.icon}</div>
-                <h3>${u.title}</h3>
-                <p>${u.desc}</p>
-            </div>`;
-        });
-        html += `</div>`;
-        ui.innerHTML = html;
-        ui.style.display = 'flex';
-        ui.style.background = 'rgba(0,0,0,0.8)';
-
-    } else {
-        ui.style.display = 'none';
-
-        // Update Game HUD (Floating)
-        // We need to render the floating level/time text manually or here
-        // The game loop calls drawHUD which does this on canvas.
-        // So we don't need HTML HUD unless requested.
-    }
-}
 
 // Global scope required for HTML onclick
 window.selectUpgrade = function (index) {
@@ -475,6 +381,7 @@ function updateUI() {
                     cursor: pointer; 
                     box-shadow: 0 0 15px rgba(250, 204, 21, 0.5);
                     transition: transform 0.1s;
+                    pointer-events: auto; 
                 " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                     🎓 前往課程 (View Course)
                 </button>
@@ -498,7 +405,7 @@ function updateUI() {
                 <p>評級: <span style="float: right; color: #facc15;">S (行銷大師)</span></p>
             </div>
 
-            <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:30px;">
+            <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:30px; pointer-events: auto;">
                 <button onclick="window.location.reload()" style="
                     padding: 15px 30px;
                     background: #94a3b8;

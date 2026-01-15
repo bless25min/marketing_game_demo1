@@ -1,6 +1,7 @@
 const MAP_SIZE = 3000;
 
-function drawGrid() {
+// Renamed to drawBoundary as it draws the map edges
+function drawBoundary() {
     // 0. No Inner Grid (Clean background)
 
     // 1. Map Boundary (Firewall Style)
@@ -10,13 +11,9 @@ function drawGrid() {
     const pulse = Math.abs(Math.sin(state.frames * 0.05));
     ctx.strokeStyle = `rgba(239, 68, 68, ${0.5 + pulse * 0.5})`; // #ef4444 pulsing opacity
     ctx.lineWidth = 4;
-
-    // Dash animation
-    ctx.setLineDash([20, 10]);
-    ctx.lineDashOffset = -state.frames * 1;
-
-    ctx.shadowColor = '#ef4444';
     ctx.shadowBlur = 10 + pulse * 10;
+    ctx.shadowColor = '#ef4444';
+
 
     // Draw Border
     ctx.strokeRect(0, 0, MAP_SIZE, MAP_SIZE);
@@ -561,9 +558,67 @@ function drawHUD() {
     }
 }
 
-function draw() {
-    ctx.fillStyle = '#0f172a';
+// function drawGrid() { ... } // Replaced/Refactored into drawBackground
+
+function drawBackground() {
+    // 1. Base Gradient (Digital Marketing Deep Blue)
+    const grad = ctx.createRadialGradient(state.width / 2, state.height / 2, 0, state.width / 2, state.height / 2, state.width);
+    grad.addColorStop(0, '#1e293b'); // Dark Slate centered
+    grad.addColorStop(1, '#0f172a'); // Black/Deep Blue edges
+    ctx.fillStyle = grad;
     ctx.fillRect(0, 0, state.width, state.height);
+
+    ctx.save();
+
+    // Camera Transform for World Elements (Grid & Particles)
+    const cx = state.width / 2;
+    const cy = state.height / 2;
+    ctx.translate(cx, cy);
+    ctx.scale(state.zoom, state.zoom); // Zoom affects grid? Maybe keep grid subtle?
+    // Actually, background grid should probably scroll with player but parallax?
+    // Simple approach: Move with player (World Grid)
+    ctx.translate(-state.player.x, -state.player.y);
+
+    // 2. World Grid
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.1)'; // Light blue, very faint
+    ctx.lineWidth = 1;
+    const gridSize = 100;
+
+    // Optimization: Only draw grid visible on screen
+    const startX = Math.floor((state.player.x - cx / state.zoom) / gridSize) * gridSize;
+    const endX = Math.ceil((state.player.x + cx / state.zoom) / gridSize) * gridSize;
+    const startY = Math.floor((state.player.y - cy / state.zoom) / gridSize) * gridSize;
+    const endY = Math.ceil((state.player.y + cy / state.zoom) / gridSize) * gridSize;
+
+    ctx.beginPath();
+    for (let x = startX; x <= endX; x += gridSize) {
+        ctx.moveTo(x, startY); ctx.lineTo(x, endY);
+    }
+    for (let y = startY; y <= endY; y += gridSize) {
+        ctx.moveTo(startX, y); ctx.lineTo(endX, y);
+    }
+    ctx.stroke();
+
+    // 3. Floating Data Particles
+    state.bgParticles.forEach(p => {
+        ctx.fillStyle = '#fff';
+        ctx.globalAlpha = p.opacity;
+        ctx.font = `bold ${p.size}px monospace`;
+        ctx.fillText(p.icon, p.x, p.y);
+    });
+    ctx.globalAlpha = 1.0;
+
+    // 4. Map Boundary (The Firewall)
+    drawBoundary();
+    // Actually original drawGrid drew the boundary. Let's keep using it for Boundary but rename conceptually.
+
+    ctx.restore();
+}
+
+function draw() {
+    drawBackground();
+    // ctx.fillStyle = '#0f172a'; // Removed
+    // ctx.fillRect(0, 0, state.width, state.height); // Removed
 
     ctx.save();
     // Centering is tricky with fixed grid.
@@ -585,7 +640,7 @@ function draw() {
     ctx.scale(state.zoom, state.zoom);
     ctx.translate(-state.player.x, -state.player.y);
 
-    drawGrid(); // Draw Grid in World Space now
+    // drawGrid(); // MOVED to drawBackground
     drawGems();
     drawBullets();
     drawEnemyBullets();

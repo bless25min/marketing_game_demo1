@@ -17,6 +17,7 @@ const state = {
     particles: [],
     floatingTexts: [],
     floatingDialogues: [], // New detached dialogues
+    bgParticles: [], // Background floating icons
     gems: [], // XP Drops
 
     level: 1,

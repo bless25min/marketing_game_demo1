@@ -83,7 +83,7 @@ function takeDamage(e, dmg) {
         // Emoji Revenue
         spawnDebris(e.x, e.y, ['💰', '🤝', '📈'], 3);
 
-        const revenue = e.xp * 100; // XP * 100 as Cash
+        const revenue = Math.floor(e.xp * 100); // XP * 100 as Cash
         state.player.money += revenue;
         spawnFloatingText(`+$${revenue}`, e.x, e.y, '#facc15');
 

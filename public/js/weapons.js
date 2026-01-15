@@ -97,22 +97,27 @@ const WEAPON_REGISTRY = {
         description: "發射文件攻擊最近的敵人 (Projectile)。\n效果：每級增加數量與傷害。",
         behavior: (w, s, stats) => {
             const bonusCount = stats.count - 1;
+            // Fix: Scale damage by level (+20% per level)
+            stats.dmg = stats.dmg * (1 + w.level * 0.2);
             fireProjectile(w, w.level + bonusCount, 0.2 + (stats.spread || 0), stats);
         }
     },
     'viral': {
         name: "病毒式傳播", icon: "💣", type: "throw", trait: "explosive",
-        baseStats: { cd: 120, dmg: 40, speed: 4, duration: 60, area: 150, color: '#a855f7', r: 15, count: 1 },
+        baseStats: { cd: 240, dmg: 40, speed: 4, duration: 60, area: 150, color: '#a855f7', r: 15, count: 1 },
         tags: ['viral'],
         description: "投擲會爆炸的病毒炸彈 (Throw)。\n效果：每級增加爆炸範圍與傷害。",
         behavior: (w, s, stats) => {
             const count = w.level + ((stats.count || 1) - 1); // 1 per level
+            // Fix: Scale Area (+10%) and Damage (+20%)
+            stats.area = (stats.area || 150) * (1 + w.level * 0.1);
+            stats.dmg = stats.dmg * (1 + w.level * 0.2);
             fireThrow(w, count, stats);
         }
     },
     'funnel': {
         name: "銷售漏斗", icon: "🌪️", type: "zone", trait: "zone",
-        baseStats: { cd: 180, dmg: 5, duration: 180, count: 1, area: 60, color: '#ef4444' },
+        baseStats: { cd: 120, dmg: 5, duration: 180, count: 2, area: 40, color: '#ef4444' },
         tags: ['funnel'],
         description: "在隨機位置生成持續傷害的火焰旋風 (Zone)。\n效果：每級增加持續時間與範圍。",
         behavior: (w, s, stats) => {
@@ -122,12 +127,16 @@ const WEAPON_REGISTRY = {
                 const tX = state.player.x + (Math.random() - 0.5) * 400;
                 const tY = state.player.y + (Math.random() - 0.5) * 300;
                 const areaMult = stats.area / 60;
+                // Fix: Duration (+20%) and Area (+10%)
+                const levelDuration = stats.duration * (1 + w.level * 0.2);
+                const levelAreaMult = areaMult * (1 + w.level * 0.1);
+
                 spawnBullet({
                     type: 'funnel_zone',
                     x: tX, y: tY, vx: 0, vy: 0,
-                    r: 60 * areaMult * s.areaMult,
+                    r: 60 * levelAreaMult * s.areaMult,
                     dmg: stats.dmg * s.damageMult,
-                    duration: stats.duration,
+                    duration: levelDuration,
                     color: stats.color,
                     color: stats.color,
                     drip: stats.drip,
@@ -151,7 +160,7 @@ const WEAPON_REGISTRY = {
     },
     'seo': {
         name: "SEO 爬蟲", icon: "🕷️", type: "summon", trait: "minion",
-        baseStats: { cd: 300, dmg: 5, count: 2, duration: 600, speed: 3, color: '#22d3ee' },
+        baseStats: { cd: 300, dmg: 5, count: 2, duration: 300, speed: 3, color: '#22d3ee' },
         tags: ['seo'],
         description: "召喚自動追蹤並攻擊敵人的爬蟲 (Summon)。\n效果：每級增加召喚數量與存活時間。",
         behavior: (w, s, stats) => {
@@ -161,7 +170,7 @@ const WEAPON_REGISTRY = {
                 spawnMinion({
                     x: state.player.x, y: state.player.y,
                     dmg: stats.dmg * s.damageMult,
-                    life: stats.duration,
+                    life: stats.duration * (1 + w.level * 0.2), // Fix: Scale life
                     color: stats.color,
                     speed: stats.speed
                 });
@@ -170,7 +179,7 @@ const WEAPON_REGISTRY = {
     },
     'cold_call': {
         name: "陌生開發", icon: "📞", type: "beam", trait: "lockon",
-        baseStats: { cd: 120, dmg: 4, duration: 30, count: 1, color: '#fca5a5' },
+        baseStats: { cd: 180, dmg: 4, duration: 30, count: 1, color: '#fca5a5' },
         tags: ['outreach'],
         description: "對最近敵人發射雷射 (Laser Beam)。\n效果：每級增加鎖定目標數量。",
         behavior: (w, s, stats) => {
@@ -193,11 +202,13 @@ const WEAPON_REGISTRY = {
     },
     'hashtag': {
         name: "熱門標籤", icon: "#️⃣", type: "orbit", trait: "orbit",
-        baseStats: { cd: 1, dmg: 5, duration: 2, count: 1, area: 90, color: '#f0abfc', speed: 1 },
+        baseStats: { cd: 1, dmg: 10, duration: 2, count: 2, area: 90, color: '#f0abfc', speed: 2 },
         tags: ['social'],
         description: "在他身周圍旋轉的標籤護盾 (Orbit)。\n效果：每級增加旋轉數量與速度。",
         behavior: (w, s, stats) => {
-            w.angle = (w.angle || 0) + 0.03 * s.speedMult * (stats.speed || 1);
+            // Fix: Scale rotation speed (+10% per level)
+            const speedMult = 1 + w.level * 0.1;
+            w.angle = (w.angle || 0) + 0.03 * s.speedMult * (stats.speed || 1) * speedMult;
             const bonusCount = stats.count - 1;
             const count = 1 + w.level + bonusCount;
 
@@ -221,7 +232,7 @@ const WEAPON_REGISTRY = {
     },
     'blog_post': {
         name: "長文佈道", icon: "📖", type: "heavy", trait: "heavy",
-        baseStats: { cd: 100, dmg: 30, speed: 3, duration: 150, count: 1, color: '#3b82f6', r: 20 },
+        baseStats: { cd: 150, dmg: 50, speed: 4, duration: 150, count: 1, color: '#3b82f6', r: 20 },
         tags: ['content'],
         description: "發射一本巨型書籍，穿透並擊退敵人 (Heavy)。\n效果：每級增加傷害與擊退力。",
         behavior: (w, s, stats) => {
@@ -229,13 +240,15 @@ const WEAPON_REGISTRY = {
             const count = 1 + Math.floor(w.level / 5) + bonusCount;
             // Heavy logic: Pierce infinity
             stats.pierce = 999;
+            // Fix: Scale Damage (+50%)
+            stats.dmg = stats.dmg * (1 + w.level * 0.5);
             // Random direction if no target
             fireProjectile(w, count, 0.1, stats);
         }
     },
     'pixel': {
         name: "像素追蹤", icon: "👁️", type: "homing", trait: "homing",
-        baseStats: { cd: 60, dmg: 2, speed: 3, duration: 120, count: 2, color: '#4ade80', r: 8 },
+        baseStats: { cd: 120, dmg: 4, speed: 3, duration: 120, count: 2, color: '#4ade80', r: 8 },
         tags: ['tech'],
         description: "發射會自動轉彎追蹤敵人的眼睛 (Homing)。\n效果：每級增加追蹤靈敏度與數量。",
         behavior: (w, s, stats) => {
@@ -249,7 +262,9 @@ const WEAPON_REGISTRY = {
 
             for (let i = 0; i < count; i++) {
                 const finalAngle = angle + (i - (count - 1) / 2) * (spread / Math.max(1, count));
-                const speed = stats.speed * (stats.randomSpeed ? (0.8 + Math.random() * 0.4) : 1);
+                // Fix: Scale Speed (+5% sensitivity)
+                const lvlSpeed = stats.speed * (1 + w.level * 0.05);
+                const speed = lvlSpeed * (stats.randomSpeed ? (0.8 + Math.random() * 0.4) : 1);
                 spawnBullet({
                     type: 'pixel_tracker',
                     x: state.player.x, y: state.player.y,
@@ -268,7 +283,7 @@ const WEAPON_REGISTRY = {
     },
     'kol': {
         name: "網紅光環", icon: "✨", type: "aura", trait: "aura",
-        baseStats: { cd: 1, dmg: 0.5, duration: 1, area: 60, color: '#ec4899' },
+        baseStats: { cd: 30, dmg: 4, duration: 1, area: 60, color: '#ec4899' },
         tags: ['influencer'],
         description: "在身邊持續造成傷害的光環 (Aura)。\n效果：每級增加範圍與傷害。",
         behavior: (w, s, stats) => {
@@ -281,7 +296,7 @@ const WEAPON_REGISTRY = {
                 type: 'kol_aura',
                 x: state.player.x, y: state.player.y,
                 vx: 0, vy: 0,
-                dmg: stats.dmg * s.damageMult,
+                dmg: stats.dmg * (1 + w.level * 0.2) * s.damageMult, // Fix: Scale Damage (+20%)
                 duration: 2,
                 r: finalArea * s.areaMult,
                 color: stats.color,
